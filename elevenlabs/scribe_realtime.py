@@ -12,7 +12,7 @@ from elevenlabs.play import play
 
 # API Keys
 ELEVENLABS_API_KEY = "sk_8fb272650773154e31f226b920b97c746720f48d68eb596b"
-GEMINI_API_KEY = "AIzaSyAtyhXWkCJNctT1jNHOYA4hac10osTQkSA"  # Get from https://aistudio.google.com/app/apikey
+GEMINI_API_KEY = "AIzaSyAtyhXWkCJNctT1jNHOYA4hac10osTQkSA"
 
 # Initialize ElevenLabs client
 elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
@@ -20,38 +20,45 @@ elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 # Audio queue
 audio_queue = Queue()
 
-# Conversation history
-conversation_history = []
+# Global flag for listening state
+is_listening = True
+
+# Conversation state
+conversation_state = "INITIAL"  # INITIAL -> WAITING_FOR_CHOICE
 
 def audio_callback(indata, frames, time, status):
     """Audio input callback"""
     if status:
         print(f"Audio status: {status}", file=sys.stderr)
-    audio_queue.put(indata.copy())
+    if is_listening:
+        audio_queue.put(indata.copy())
 
-async def send_to_gemini(user_message):
-    """Send message to Gemini and get response"""
-    global is_listening
+async def get_breathing_exercise():
+    """Get Gemini to suggest breathing exercises to calm vitals"""
     
-    print(f"\n🤔 Thinking...")
+    print(f"\n🤔 Getting calming suggestions...")
     
-    # Add user message to history
-    conversation_history.append({
-        "role": "user",
-        "parts": [{"text": user_message}]
-    })
-    
-    # Gemini API endpoint - using v1beta (supports system_instruction)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     
-    # Request payload with system instruction for SHORT responses
+    system_prompt = """You are a calming medical assistant. The patient has elevated vitals but doesn't want to call anyone.
+
+YOUR TASK: Provide ONE simple breathing exercise or calming technique (2-3 sentences max) to help lower their heart rate and blood pressure.
+
+Example:
+"Try taking slow, deep breaths. Breathe in slowly through your nose for 4 counts, hold for 4 counts, then exhale through your mouth for 6 counts. Repeat this for a few minutes."
+
+Keep it simple, calm, and actionable. Maximum 3 sentences."""
+
     payload = {
         "system_instruction": {
-            "parts": [{
-                "text": "You are a helpful medical assistant. Keep responses SHORT - maximum 2-3 sentences. Be direct and actionable. No long lists or explanations."
-            }]
+            "parts": [{"text": system_prompt}]
         },
-        "contents": conversation_history
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": "Give me a breathing exercise to calm down."}]
+            }
+        ]
     }
     
     try:
@@ -59,75 +66,93 @@ async def send_to_gemini(user_message):
             async with session.post(url, json=payload) as response:
                 if response.status == 200:
                     data = await response.json()
-                    
-                    # Extract the response text
                     ai_response = data['candidates'][0]['content']['parts'][0]['text']
                     
-                    # Add AI response to history
-                    conversation_history.append({
-                        "role": "model",
-                        "parts": [{"text": ai_response}]
-                    })
-                    
                     print(f"\n🤖 AI: {ai_response}\n")
-                    
-                    # PAUSE LISTENING while AI speaks
-                    is_listening = False
-                    
-                    # Give a moment for the flag to take effect
-                    await asyncio.sleep(0.2)
-                    
-                    # Clear any audio that accumulated
-                    while not audio_queue.empty():
-                        audio_queue.get()
-                    
-                    print(f"🔊 Speaking...")
-                    await speak_response(ai_response)
-                    print(f"✓ Done speaking\n")
-                    
-                    # Wait a moment after speech ends
-                    await asyncio.sleep(0.5)
-                    
-                    # Clear any audio that accumulated during speech
-                    while not audio_queue.empty():
-                        audio_queue.get()
-                    
-                    # RESUME LISTENING
-                    is_listening = True
-                    print(f"🎙️  Listening...\n")
-                    
                     return ai_response
                 else:
-                    error_text = await response.text()
-                    print(f"\n⚠️  Gemini API error ({response.status}): {error_text}\n")
-                    return None
+                    # Fallback breathing exercise
+                    return "Try taking slow, deep breaths. Breathe in through your nose for 4 counts, hold for 4, then exhale through your mouth for 6 counts. This can help lower your heart rate."
                     
     except Exception as e:
         print(f"\n⚠️  Error calling Gemini: {e}\n")
-        return None
+        # Fallback breathing exercise
+        return "Try taking slow, deep breaths. Breathe in through your nose for 4 counts, hold for 4, then exhale through your mouth for 6 counts. This can help lower your heart rate."
+
+async def handle_patient_choice(text):
+    """Handle patient's choice: 911, family, or neither"""
+    
+    text_lower = text.lower()
+    
+    # Check for 911
+    if "911" in text_lower or "emergency" in text_lower or "ambulance" in text_lower:
+        response = "Calling 911 now. Emergency services are on their way."
+        action = "CALL_911"
+    
+    # Check for family
+    elif "family" in text_lower or "contact" in text_lower:
+        response = "Calling your emergency contact now."
+        action = "CALL_FAMILY"
+    
+    # Check for neither
+    elif "neither" in text_lower or "no" in text_lower or "none" in text_lower or "don't" in text_lower:
+        # Get breathing exercise from Gemini
+        breathing_exercise = await get_breathing_exercise()
+        response = breathing_exercise
+        action = "NEITHER"
+    
+    # Unclear response - ask again
+    else:
+        response = "I didn't catch that. Please say call 911, call family, or neither."
+        action = "CONTINUE"
+    
+    return response, action
 
 async def speak_response(text):
-    """Convert AI response to speech using ElevenLabs"""
+    """Convert text to speech using ElevenLabs"""
+    global is_listening
+    
+    # PAUSE LISTENING while AI speaks
+    is_listening = False
+    await asyncio.sleep(0.2)
+    
+    # Clear audio queue
+    while not audio_queue.empty():
+        audio_queue.get()
+    
     try:
-        # Run blocking TTS call in thread pool to not block async loop
+        print(f"🔊 Speaking...")
+        
         loop = asyncio.get_event_loop()
         audio = await loop.run_in_executor(
             None,
             lambda: elevenlabs_client.text_to_speech.convert(
                 text=text,
                 voice_id="JBFqnCBsd6RMkjVDRZzb",  # Rachel voice
-                model_id="eleven_turbo_v2_5",  # Fast model for real-time
+                model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128",
             )
         )
         
-        # Play the audio (also blocking, so run in executor)
         await loop.run_in_executor(None, play, audio)
+        print(f"✓ Done speaking\n")
         
     except Exception as e:
         print(f"⚠️  TTS error: {e}\n")
+    
+    await asyncio.sleep(0.5)
+    
+    # Clear audio again
+    while not audio_queue.empty():
+        audio_queue.get()
+    
+    # RESUME LISTENING
+    is_listening = True
 
 async def main():
+    """Main function - triggered from frontend when alert happens"""
+    global is_listening, conversation_state
+    
     samplerate = 16000
     channels = 1
     blocksize = 1600  # 100ms at 16kHz
@@ -146,7 +171,8 @@ async def main():
         f"&commit_strategy=vad"
     )
     
-    print("Connecting to ElevenLabs...")
+    print("🚨 EMERGENCY ALERT TRIGGERED")
+    print("Connecting to ElevenLabs...\n")
     
     try:
         async with websockets.connect(
@@ -168,25 +194,54 @@ async def main():
                             
                             if message_type == "session_started":
                                 print(f"✓ Session started!")
-                                print(f"🎙️  Start speaking! (I'll respond after 1.5s of silence)\n")
+                                
+                                # AI speaks first with hardcoded message
+                                initial_message = "Your vitals are not normal. You have three options: call 911, call family, or neither."
+                                print(f"\n🤖 AI: {initial_message}\n")
+                                await speak_response(initial_message)
+                                
+                                conversation_state = "WAITING_FOR_CHOICE"
+                                print(f"🎙️  Listening for your choice...\n")
                                 
                             elif message_type == "partial_transcript":
-                                # Show live transcription
                                 text = data.get('text', '')
                                 if text.strip():
                                     print(f"   You: {text}", end='\r')
                                     sys.stdout.flush()
                                     
                             elif message_type == "committed_transcript":
-                                # This is the complete sentence!
                                 text = data.get('text', '')
-                                if text.strip():
-                                    print(f"\n✅ You: {text}")
+                                if text.strip() and conversation_state == "WAITING_FOR_CHOICE":
+                                    print(f"\n✅ You said: {text}")
                                     
-                                    # THIS IS WHERE WE SEND TO GEMINI!
-                                    await send_to_gemini(text)
+                                    # Process the choice
+                                    response, action = await handle_patient_choice(text)
                                     
-                                    print(f"🎙️  Listening...\n")
+                                    print(f"\n🤖 AI: {response}\n")
+                                    await speak_response(response)
+                                    
+                                    if action == "CALL_911":
+                                        print("\n🚨 ACTION: CALLING 911\n")
+                                        print("=" * 50)
+                                        print(">>> TRIGGER: Call 911 from your system here <<<")
+                                        print("=" * 50)
+                                        stop_event.set()
+                                        
+                                    elif action == "CALL_FAMILY":
+                                        print("\n📞 ACTION: CALLING FAMILY\n")
+                                        print("=" * 50)
+                                        print(">>> TRIGGER: Call family from your system here <<<")
+                                        print("=" * 50)
+                                        stop_event.set()
+                                    
+                                    elif action == "NEITHER":
+                                        print("\n🧘 ACTION: PROVIDED BREATHING EXERCISE\n")
+                                        print("=" * 50)
+                                        print(">>> Patient chose self-calming - monitor vitals <<<")
+                                        print("=" * 50)
+                                        stop_event.set()
+                                    
+                                    # If CONTINUE, loop continues waiting for valid response
                                     
                             elif message_type == "input_error":
                                 print(f"⚠️  INPUT ERROR: {data.get('error')}")
@@ -225,7 +280,6 @@ async def main():
                             await websocket.send(json.dumps(packet))
                             packet_count += 1
                             
-                            # Status indicator
                             if packet_count % 50 == 0:
                                 if audio_level > 100:
                                     print(f"[🔊 {packet_count} packets]", end='\r')
@@ -266,19 +320,27 @@ async def main():
         import traceback
         traceback.print_exc()
 
+# Function to trigger from frontend
+def trigger_emergency_check():
+    """
+    Call this function from your frontend when red alert is triggered
+    No parameters needed - just triggers the voice agent
+    """
+    global conversation_state
+    conversation_state = "INITIAL"
+    
+    # Run the async main function
+    asyncio.run(main())
+
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        print("=" * 60)
+        print("SIMULATING EMERGENCY ALERT FROM FRONTEND")
+        print("=" * 60)
+        
+        # Just call the function - no data needed
+        trigger_emergency_check()
+        
     except KeyboardInterrupt:
         pass
-    print("\n✓ Conversation ended!")
-    
-    # Print conversation summary
-    if conversation_history:
-        print("\n📝 Conversation Summary:")
-        print("=" * 50)
-        for msg in conversation_history:
-            role = "You" if msg["role"] == "user" else "AI"
-            text = msg["parts"][0]["text"]
-            print(f"{role}: {text}")
-        print("=" * 50)
+    print("\n✓ Emergency assessment complete!")
