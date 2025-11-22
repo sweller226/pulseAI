@@ -1,8 +1,0 @@
-flask
-flask-cors
-python-dotenv
-google-genai
-fer
-opencv-python
-tensorflow
-numpy

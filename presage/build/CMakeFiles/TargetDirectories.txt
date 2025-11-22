@@ -1,3 +1,0 @@
-/mnt/c/Users/Skwig/Desktop/Development/dev/Hackathons/hackwestern12/presage/build/CMakeFiles/hello_vitals.dir
-/mnt/c/Users/Skwig/Desktop/Development/dev/Hackathons/hackwestern12/presage/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Skwig/Desktop/Development/dev/Hackathons/hackwestern12/presage/build/CMakeFiles/rebuild_cache.dir

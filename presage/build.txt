@@ -1,7 +1,0 @@
-ffmpeg -f dshow -i video="Integrated Webcam" -vf "scale=1280:720,fps=10" -f mpegts tcp://172.26.68.19:8081
-
-cd /mnt/c/Users/Skwig/Desktop/Development/dev/Hackathons/hackwestern12/presage && ./build.sh
-
-./build/hello_vitals
-
-python main.py --gui
