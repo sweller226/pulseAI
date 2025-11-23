@@ -1,0 +1,7 @@
+sounddevice
+numpy
+websockets==12.0
+aiohttp
+elevenlabs>=2.0.0
+scipy
+flask

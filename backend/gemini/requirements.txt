@@ -1,0 +1,10 @@
+flask
+flask-cors
+python-dotenv
+google-genai
+fer
+opencv-python
+tensorflow
+numpy
+twilio==9.0.4
+requests==2.31.0
