@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { LiveMonitor } from '../components/dashboard/LiveMonitor';
 import { Layout } from '../components/layout/Layout';
 import { PatientInfo } from '../components/dashboard/PatientInfo';
@@ -9,6 +9,7 @@ import { Heart, Wind, FileText, ArrowLeft, AlertCircle, Wifi, WifiOff } from 'lu
 import { toast } from 'sonner';
 import { useVitals } from '../hooks/useVitals';
 import { useAlert } from '../hooks/useAlert';
+import { EmergencyAlert } from '../components/dashboard/EmergencyAlert';
 
 const Dashboard = () => {
     const [currentView, setCurrentView] = useState<'dashboard' | 'history'>('dashboard');
@@ -17,35 +18,61 @@ const Dashboard = () => {
     const { vitals, loading, error } = useVitals(2000); // Refresh every 2 seconds
     const { alertActive } = useAlert(3000); // Check alerts every 3 seconds
 
-    // Generate historical data from current vitals (simulate trend)
+    // State for continuous graph data (real-time monitoring)
+    const [hrHistory, setHrHistory] = useState<{ time: number, value: number }[]>([]);
+    const [brHistory, setBrHistory] = useState<{ time: number, value: number }[]>([]);
+
+    // Update history when new vitals arrive
+    useEffect(() => {
+        if (!vitals) return;
+
+        const now = Date.now();
+        const MAX_POINTS = 30; // Show last 30 data points
+
+        // Update heart rate history
+        setHrHistory(prev => {
+            const newData = [...prev, { time: now, value: vitals.pulse_rate || 0 }];
+            return newData.slice(-MAX_POINTS); // Keep only last MAX_POINTS
+        });
+
+        // Update breathing rate history
+        setBrHistory(prev => {
+            const newData = [...prev, { time: now, value: vitals.breathing_rate || 0 }];
+            return newData.slice(-MAX_POINTS);
+        });
+    }, [vitals]);
+
+    // Format data for chart (with relative time labels)
     const hrData = useMemo(() => {
-        if (!vitals) return [];
-        const baseHR = vitals.pulse_rate || 72;
-        return Array.from({ length: 20 }, (_, i) => ({
-            time: `${new Date().getHours()}:${String(new Date().getMinutes() - (19 - i)).padStart(2, '0')}`,
-            value: baseHR + (Math.random() * 6 - 3) // ±3 variation
+        if (hrHistory.length === 0) return [];
+        const firstTime = hrHistory[0].time;
+        return hrHistory.map((point, i) => ({
+            time: i.toString(), // Simple index for x-axis
+            value: point.value,
+            seconds: Math.floor((point.time - firstTime) / 1000) // For tooltip
         }));
-    }, [vitals?.pulse_rate]);
+    }, [hrHistory]);
 
     const respData = useMemo(() => {
-        if (!vitals) return [];
-        const baseBR = vitals.breathing_rate || 16;
-        return Array.from({ length: 20 }, (_, i) => ({
-            time: `${new Date().getHours()}:${String(new Date().getMinutes() - (19 - i)).padStart(2, '0')}`,
-            value: baseBR + (Math.random() * 2 - 1) // ±1 variation
+        if (brHistory.length === 0) return [];
+        const firstTime = brHistory[0].time;
+        return brHistory.map((point, i) => ({
+            time: i.toString(),
+            value: point.value,
+            seconds: Math.floor((point.time - firstTime) / 1000)
         }));
-    }, [vitals?.breathing_rate]);
+    }, [brHistory]);
 
-    // Determine vital status based on values
+    // Determine vital status based on values (adjusted for warning)
     const getHeartRateStatus = (hr: number): 'ok' | 'warning' | 'critical' => {
-        if (hr < 60 || hr > 100) return 'critical';
-        if (hr < 65 || hr > 95) return 'warning';
+        if (hr < 50 || hr > 120) return 'critical'; // Severe abnormal
+        if (hr < 60 || hr > 100) return 'warning';  // Mild abnormal (yellow)
         return 'ok';
     };
 
     const getBreathingRateStatus = (br: number): 'ok' | 'warning' | 'critical' => {
-        if (br < 12 || br > 20) return 'critical';
-        if (br < 14 || br > 18) return 'warning';
+        if (br < 10 || br > 25) return 'critical'; // Severe abnormal
+        if (br < 12 || br > 20) return 'warning';  // Mild abnormal
         return 'ok';
     };
 
@@ -62,6 +89,15 @@ const Dashboard = () => {
 
     return (
         <Layout>
+            {/* Emergency Alert Modal - Shows over everything */}
+            <EmergencyAlert
+                isActive={alertActive}
+                vitalData={{
+                    pulse_rate: vitals?.pulse_rate || 0,
+                    breathing_rate: vitals?.breathing_rate || 0
+                }}
+            />
+
             {currentView === 'dashboard' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 h-[calc(100vh-60px)] overflow-hidden animate-fade-in px-6">
                     {/* LEFT PANEL (65%) */}
@@ -73,16 +109,6 @@ const Dashboard = () => {
                                     <WifiOff className="w-4 h-4" />
                                     <span className="text-xs font-semibold">Backend Disconnected</span>
                                     <span className="text-xs text-gray-400">- {error}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Alert Banner */}
-                        {alertActive && (
-                            <div className="flex-none glass-panel p-3 border-red-500/50 bg-red-500/20 animate-pulse-glow">
-                                <div className="flex items-center gap-2 text-red-400">
-                                    <AlertCircle className="w-5 h-5 animate-pulse" />
-                                    <span className="text-sm font-bold uppercase">ALERT ACTIVE</span>
                                 </div>
                             </div>
                         )}
@@ -141,6 +167,8 @@ const Dashboard = () => {
                                 icon={Heart}
                                 color="#00d9ff"
                                 data={hrData}
+                                minValue={40}
+                                maxValue={140}
                             />
                         </div>
 
@@ -154,6 +182,8 @@ const Dashboard = () => {
                                 icon={Wind}
                                 color="#00ff88"
                                 data={respData}
+                                minValue={8}
+                                maxValue={30}
                             />
                         </div>
 

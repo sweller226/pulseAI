@@ -10,9 +10,11 @@ interface VitalGraphCardProps {
     icon: LucideIcon;
     data: { time: string; value: number }[];
     color: string;
+    minValue?: number; // Fixed Y-axis minimum
+    maxValue?: number; // Fixed Y-axis maximum
 }
 
-export const VitalGraphCard = ({ title, value, unit, status, icon: Icon, data, color }: VitalGraphCardProps) => {
+export const VitalGraphCard = ({ title, value, unit, status, icon: Icon, data, color, minValue, maxValue }: VitalGraphCardProps) => {
     const statusColors = {
         ok: '#10b981',
         warning: '#f59e0b',
@@ -73,7 +75,7 @@ export const VitalGraphCard = ({ title, value, unit, status, icon: Icon, data, c
                         <XAxis
                             dataKey="time"
                             stroke="rgba(255,255,255,0.3)"
-                            tick={{ fill: '#9ca3af', fontSize: 10 }}
+                            tick={false} // Hide tick labels for cleaner real-time monitor look
                             tickLine={false}
                             axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
                         />
@@ -83,6 +85,7 @@ export const VitalGraphCard = ({ title, value, unit, status, icon: Icon, data, c
                             tickLine={false}
                             axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
                             width={35}
+                            domain={minValue !== undefined && maxValue !== undefined ? [minValue, maxValue] : ['auto', 'auto']}
                         />
                         <Tooltip
                             contentStyle={{
