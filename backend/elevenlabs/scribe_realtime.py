@@ -182,6 +182,7 @@ async def handle_patient_choice(text):
                     "name": "Emergency Alert",
                     "address": "Patient's home",
                     "incident": "Patient requested 911",
+                    "medical history": "Hypertension, Type 2 Diabetes",
                     "emotion": "Distressed",
                     "severity": "High"
                 }
@@ -207,6 +208,7 @@ async def handle_patient_choice(text):
                     "name": "Family Alert",
                     "address": "Patient's home",
                     "incident": "Patient needs assistance",
+                    "medical history": "Hypertension, Type 2 Diabetes",
                     "emotion": "Concerned",
                     "severity": "Low"
                 }
