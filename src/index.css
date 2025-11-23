@@ -1,149 +1,87 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+--popover: 0 0% 3%;
+--popover-foreground: 0 0% 100%;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+--primary: 189 100% 50%;
+--primary-foreground: 0 0% 0%;
 
-@layer base {
-  :root {
-    --background: 220 17% 97%;
-    --foreground: 222 47% 11%;
+--secondary: 0 0% 9%;
+--secondary-foreground: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+--muted: 0 0% 9%;
+--muted-foreground: 0 0% 63.9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+--accent: 189 100% 50%;
+--accent-foreground: 0 0% 0%;
 
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
+--destructive: 0 62.8% 30.6%;
+--destructive-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+--border: 0 0% 14.9%;
+--input: 0 0% 14.9%;
+--ring: 189 100% 50%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 48%;
-
-    --radius: 0.75rem;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --critical: 0 84% 60%;
-    --critical-foreground: 0 0% 100%;
-
-    --pulse: 199 89% 48%;
-
-    --chart-1: 199 89% 48%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 271 81% 56%;
-  }
-
-  .dark {
-    --background: 0 0% 0%;
-    --foreground: 210 40% 98%;
-
-    --card: 15 23% 6%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 15 23% 6%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217 33% 18%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 199 89% 48%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --critical: 0 84% 60%;
-    --critical-foreground: 0 0% 100%;
-
-    --pulse: 199 89% 48%;
-
-    --chart-1: 199 89% 48%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 271 81% 56%;
-  }
+--radius: 0.5rem;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground antialiased;
-  }
-
-  html {
-    color-scheme: dark;
-  }
+.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 3%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 189 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 9%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 189 100% 50%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 189 100% 50%;
+}
 }
 
-@layer utilities {
-  .pulse-ring {
-    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
+.glass-panel {
+  @apply bg-tactical-panel backdrop-blur-xl border border-tactical-border rounded-xl;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
 
-  @keyframes pulse-ring {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
+/* Gradient Text */
+.gradient-text {
+  @apply bg-iridescent-gradient bg-clip-text text-transparent;
+}
 
-  .status-pulse {
-    animation: status-pulse 2s ease-in-out infinite;
-  }
+/* Animated Gradient Border */
+.animated-border {
+  position: relative;
+  background: linear-gradient(#1a1a1a, #1a1a1a) padding-box,
+    linear-gradient(135deg, #00d9ff, #a78bfa, #ec4899) border-box;
+  border: 2px solid transparent;
+  background-size: 200% 200%;
+  animation: gradient-rotate 3s ease infinite;
+}
 
-  @keyframes status-pulse {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.8;
-    }
-  }
+/* Custom Scrollbar (Hidden by default, visible on hover/scroll) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 217, 255, 0.5);
+}
 }
