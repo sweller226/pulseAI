@@ -3,6 +3,7 @@ import { LiveMonitor } from '../components/dashboard/LiveMonitor';
 import { Layout } from '../components/layout/Layout';
 import { PatientInfo } from '../components/dashboard/PatientInfo';
 import { VitalGraphCard } from '../components/dashboard/VitalGraphCard';
+import { MoodCard } from '../components/dashboard/MoodCard';
 import { PatientHistory } from '../components/dashboard/PatientHistory';
 import { Heart, Wind, FileText, ArrowLeft, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -131,7 +132,7 @@ const Dashboard = () => {
                         </div>
 
                         {/* Heart Rate */}
-                        <div className="h-[calc(50%-12px)] min-h-0 max-h-[35vh]">
+                        <div className="h-[calc(33%-12px)] min-h-0 max-h-[30vh]">
                             <VitalGraphCard
                                 title="HEART RATE"
                                 value={vitals?.pulse_rate?.toString() || '--'}
@@ -144,7 +145,7 @@ const Dashboard = () => {
                         </div>
 
                         {/* Breathing Rate */}
-                        <div className="h-[calc(50%-12px)] min-h-0 max-h-[35vh]">
+                        <div className="h-[calc(33%-12px)] min-h-0 max-h-[30vh]">
                             <VitalGraphCard
                                 title="BREATHING RATE"
                                 value={vitals?.breathing_rate?.toString() || '--'}
@@ -153,6 +154,14 @@ const Dashboard = () => {
                                 icon={Wind}
                                 color="#00ff88"
                                 data={respData}
+                            />
+                        </div>
+
+                        {/* Mood */}
+                        <div className="h-[calc(33%-12px)] min-h-0 max-h-[30vh]">
+                            <MoodCard
+                                mood={vitals?.emotion_summary}
+                                confidence={vitals?.emotion?.confidence} // Assuming confidence is available in details or root
                             />
                         </div>
                     </div>

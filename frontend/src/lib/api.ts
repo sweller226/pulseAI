@@ -10,6 +10,7 @@ export interface VitalsResponse {
     status: string;
     emotion: {
         dominant: string;
+        confidence?: number;
         details: Record<string, any>;
     };
     emotion_summary: string;
