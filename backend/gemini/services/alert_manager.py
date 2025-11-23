@@ -76,7 +76,7 @@ class AlertManager:
             return True
         
     def trigger_external_conversation(self, vitals):
-        url = "http://localhost:8080/api/trigger-alert"
+        url = "http://localhost:7000/api/trigger-alert"
         
         payload = {
             "patient_id": "12345",    # adjust if dynamic

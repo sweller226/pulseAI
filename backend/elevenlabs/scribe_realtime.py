@@ -182,8 +182,6 @@ async def handle_patient_choice(text):
                     "name": "Emergency Alert",
                     "address": "Patient's home",
                     "incident": "Patient requested 911",
-                    "heartrate": "Unknown",
-                    "breathing": "Unknown",
                     "emotion": "Distressed",
                     "severity": "High"
                 }
@@ -209,8 +207,6 @@ async def handle_patient_choice(text):
                     "name": "Family Alert",
                     "address": "Patient's home",
                     "incident": "Patient needs assistance",
-                    "heartrate": "Unknown",
-                    "breathing": "Unknown",
                     "emotion": "Concerned",
                     "severity": "Low"
                 }
@@ -569,7 +565,7 @@ if __name__ == '__main__':
     print("  POST /api/trigger-alert   - Trigger emergency alert")
     print("  GET  /api/status          - Get session status")
     print("  POST /api/stop            - Stop current session")
-    print("\nServer starting on http://localhost:8080")
+    print("\nServer starting on http://localhost:7000")
     print("="*60 + "\n")
     
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=7000, debug=True)

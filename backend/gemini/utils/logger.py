@@ -6,7 +6,7 @@ import logging
 import sys
 from datetime import datetime
 
-def setup_logger(name: str, log_file: str = None, level=logging.INFO):
+def setup_logger(name: str, log_file: str = None, level=logging.DEBUG):
     """
     Create a logger with console and optional file output
     

@@ -175,10 +175,8 @@ class EmotionAnalyzer:
         """Check if FER is properly initialized"""
         return self.detector is not None
 
-
 # Singleton instance
 emotion_analyzer = EmotionAnalyzer()
-
 
 def start_emotion_analysis(camera_index=0):
     """Start the emotion analyzer with webcam"""

@@ -5,3 +5,4 @@ aiohttp
 elevenlabs>=2.0.0
 scipy
 flask
+flask-cors

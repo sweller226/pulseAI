@@ -63,14 +63,6 @@ def validate_vitals(vitals: dict) -> bool:
             logger.warning(f"Breathing out of range: {breathing}")
             return False
         
-        if not (-3.0 <= pulse_conf <= 3.0):
-            logger.warning(f"Pulse confidence out of range: {pulse_conf}")
-            return False
-        
-        if not (-3.0 <= breathing_conf <= 3.0):
-            logger.warning(f"Breathing confidence out of range: {breathing_conf}")
-            return False
-        
         return True
     
     except (ValueError, TypeError) as e:
@@ -126,7 +118,7 @@ def socket_server():
                                    f"Talking: {vitals.get('talking')}")
                         
                         # Check with vitals monitor
-                        if vitals_monitor:
+                        if vitals_monitor:                            
                             vitals_monitor.check_vitals(vitals)
                     
                     except json.JSONDecodeError as e:

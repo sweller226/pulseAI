@@ -22,7 +22,7 @@ export const PatientInfo = () => {
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="glass-effect px-2 py-0.5 rounded border border-white/20 text-gray-300 font-medium transition-smooth hover:bg-white/10 hover:border-white/30">ID: #8492-TX</span>
                         <span className="flex items-center gap-1 text-cyan-400 glass-effect px-2 py-0.5 rounded border border-cyan-500/30 transition-smooth hover:bg-cyan-500/10 hover:border-cyan-500/50">
-                            <MapPin className="w-3 h-3" /> ROOM 304-A
+                            <MapPin className="w-3 h-3" /> 123 Main St.
                         </span>
                     </div>
                 </div>
