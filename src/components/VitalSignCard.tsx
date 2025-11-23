@@ -55,7 +55,7 @@ export const VitalSignCard = ({
         </div>
         
         {chartData.length > 0 && (
-          <div className="h-10 -mx-2 -mb-2">
+          <div className="h-14 -mx-2 -mb-2">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <Line

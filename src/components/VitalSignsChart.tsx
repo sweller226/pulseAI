@@ -2,15 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Slider } from "@/components/ui/slider";
 import { useState, useEffect } from "react";
-
-interface VitalDataPoint {
-  timestamp: number;
-  time: string;
-  heartRate: number;
-  breathingRate: number;
-  systolic: number;
-  diastolic: number;
-}
+import { VitalDataPoint } from "@/components/VitalDataPoint";
 
 interface VitalSignsChartProps {
   data: VitalDataPoint[];
@@ -96,24 +88,6 @@ export const VitalSignsChart = ({ data }: VitalSignsChartProps) => {
               dot={false}
               strokeWidth={2.5}
               name="Breathing Rate (BrPM)"
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="systolic"
-              stroke="#f59e0b"
-              dot={false}
-              strokeWidth={2.5}
-              name="BP Systolic (mmHg)"
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="diastolic"
-              stroke="#8b5cf6"
-              dot={false}
-              strokeWidth={2.5}
-              name="BP Diastolic (mmHg)"
               isAnimationActive={false}
             />
           </LineChart>
