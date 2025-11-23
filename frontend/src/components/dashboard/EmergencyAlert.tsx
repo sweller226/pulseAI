@@ -11,6 +11,8 @@ interface EmergencyAlertProps {
 
 export const EmergencyAlert = ({ isActive, vitalData }: EmergencyAlertProps) => {
     const [hasPlayedSound, setHasPlayedSound] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertActivatedAt, setAlertActivatedAt] = useState<number | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
@@ -20,12 +22,31 @@ export const EmergencyAlert = ({ isActive, vitalData }: EmergencyAlertProps) => 
                 audioRef.current.play().catch(err => console.warn('Audio play failed:', err));
             }
             setHasPlayedSound(true);
-        } else if (!isActive) {
-            setHasPlayedSound(false);
-        }
-    }, [isActive, hasPlayedSound]);
+            setShowAlert(true);
+            setAlertActivatedAt(Date.now());
+        } else if (!isActive && alertActivatedAt) {
+            // Only hide after minimum 5 seconds
+            const timeSinceActivation = Date.now() - alertActivatedAt;
+            const minDisplayTime = 5000; // 5 seconds
 
-    if (!isActive) return null;
+            if (timeSinceActivation < minDisplayTime) {
+                // Wait for remaining time before hiding
+                const remainingTime = minDisplayTime - timeSinceActivation;
+                setTimeout(() => {
+                    setShowAlert(false);
+                    setHasPlayedSound(false);
+                    setAlertActivatedAt(null);
+                }, remainingTime);
+            } else {
+                // Enough time has passed, hide immediately
+                setShowAlert(false);
+                setHasPlayedSound(false);
+                setAlertActivatedAt(null);
+            }
+        }
+    }, [isActive, hasPlayedSound, alertActivatedAt]);
+
+    if (!showAlert) return null;
 
     return (
         <>

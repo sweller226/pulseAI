@@ -77,7 +77,7 @@ const Dashboard = () => {
     };
 
     const handleAction = (action: string) => {
-        if (action === "VIEW HISTORY") {
+        if (action === "VIEW INFO") {
             setCurrentView('history');
             return;
         }
@@ -126,11 +126,11 @@ const Dashboard = () => {
                         {/* Quick Actions */}
                         <div className="flex-none">
                             <button
-                                onClick={() => handleAction("VIEW HISTORY")}
+                                onClick={() => handleAction("VIEW INFO")}
                                 className="w-full p-3 glass-panel hover:bg-white/10 text-white transition-smooth flex items-center justify-center gap-2 group hover-lift"
                             >
                                 <FileText className="w-4 h-4 group-hover:scale-110 transition-smooth" />
-                                <span className="font-semibold uppercase tracking-wider text-xs">View History</span>
+                                <span className="font-semibold uppercase tracking-wider text-xs">View Info</span>
                             </button>
                         </div>
                     </div>
