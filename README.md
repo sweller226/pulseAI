@@ -1,4 +1,4 @@
-# PatientPulse
+# PulseAI
 
 Real-time patient monitoring system with AI-powered vital sign analysis and automated emergency response.
 
